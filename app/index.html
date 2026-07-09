@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity-Adjusted Efficiency (GAE)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">NBA <span>GAE Metrics</span></div>
+        <div class="search-container">
+            <input type="text" id="playerSearch" placeholder="Search for a player...">
+            <button id="searchBtn">Search</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Gravity-Adjusted Efficiency</h1>
+            <p>Discover which NBA players generate the most mathematical value through offensive gravity.</p>
+        </section>
+
+        <section class="dashboard">
+            <div class="card plot-card">
+                <h2>GAE vs Standard 3P%</h2>
+                <div id="gaeScatterPlot" class="plot-container"></div>
+            </div>
+
+            <div class="card plot-card">
+                <h2>Proximity vs Standard Efficiency (Bubble = C&S Volume)</h2>
+                <div id="proximityScatterPlot" class="plot-container"></div>
+            </div>
+            
+            <div class="card plot-card full-width">
+                <h2>Gravity Impact Dumbbell Plot (Top, Bottom, Targets & Searched)</h2>
+                <div id="dumbbellPlot" class="plot-container"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
