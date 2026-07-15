@@ -8,6 +8,7 @@ from nba_api.stats.endpoints import leaguedashplayerstats
 from nba_api.stats.endpoints import leaguedashplayerptshot
 from nba_api.stats.endpoints import leaguedashptdefend
 from nba_api.stats.endpoints import leaguedashptstats
+from nba_api.stats.endpoints import playerindex
 
 def main():
     print("Fetching Overall Player Stats Data...")
@@ -309,8 +310,19 @@ def main():
     plt.close()
 
     # --- Export to JSON for Web App ---
+    print("Fetching Player Index (for Team & Position)...")
+    time.sleep(1)
+    try:
+        pi_data = playerindex.PlayerIndex(season='2025-26').get_data_frames()[0]
+        df_final = pd.merge(df_final, pi_data[['PERSON_ID', 'POSITION']], left_on='PLAYER_ID', right_on='PERSON_ID', how='left')
+    except Exception as e:
+        print(f"Warning: Could not fetch player index: {e}")
+        df_final['POSITION'] = "N/A"
+        if 'TEAM_ABBREVIATION' not in df_final.columns:
+            df_final['TEAM_ABBREVIATION'] = "N/A"
+
     export_cols = [
-        'PLAYER_ID', 'PLAYER_NAME', 'FG3A', 'FG3_PCT', 
+        'PLAYER_ID', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'POSITION', 'FG3A', 'FG3_PCT', 
         'CATCH_SHOOT_FG3A', 'CATCH_SHOOT_FG3_PCT', 
         'AVG_DEF_DIST', 'PROXIMITY_DELTA', 'Gravity_Index', 'GAE', 'GAE_DIFF'
     ]

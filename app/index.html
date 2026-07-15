@@ -5,43 +5,208 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gravity-Adjusted Efficiency (GAE)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=3">
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 </head>
 <body>
     <header class="navbar">
         <div class="logo">NBA <span>GAE Metrics</span></div>
-        <div class="search-container">
-            <input type="text" id="playerSearch" placeholder="Search for a player...">
-            <button id="searchBtn">Search</button>
-            <button id="resetBtn">Reset</button>
-        </div>
+        <nav class="nav-links">
+            <a href="#" data-target="dashboard-view" class="nav-tab active">Main Dashboard</a>
+            <a href="#" data-target="theory-view" class="nav-tab">Theory & Methodology</a>
+            <a href="#" data-target="explorer-view" class="nav-tab">Player Explorer</a>
+        </nav>
     </header>
 
+    <!-- Player Profile Modal -->
+    <div id="playerModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="closeModalBtn" class="close-btn">&times;</button>
+            <div class="modal-header">
+                <h2 id="modalPlayerName">Player Name</h2>
+                <span id="modalTeamPos" class="team-pos-badge">TEAM | POS</span>
+            </div>
+            <div class="modal-stats-grid">
+                <div class="stat-box highlight">
+                    <h3>GAE</h3>
+                    <p id="modalGAE">0.0%</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Standard 3P%</h3>
+                    <p id="modal3P">0.0%</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Gravity Index</h3>
+                    <p id="modalGravity">0.0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Total 3PA</h3>
+                    <p id="modal3PA">0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>C&S 3PA</h3>
+                    <p id="modalCS3PA">0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Avg Def Dist</h3>
+                    <p id="modalDefDist">0 ft</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <main>
-        <section class="hero">
-            <h1>Gravity-Adjusted Efficiency</h1>
-            <p>Discover which NBA players generate the most mathematical value through offensive gravity.</p>
-        </section>
-
-        <section class="dashboard">
-            <div class="card plot-card">
-                <h2>GAE vs Standard 3P%</h2>
-                <div id="gaeScatterPlot" class="plot-container"></div>
-            </div>
-
-            <div class="card plot-card">
-                <h2>Proximity vs Standard Efficiency (Bubble = C&S Volume)</h2>
-                <div id="proximityScatterPlot" class="plot-container"></div>
-            </div>
+        <!-- View 1: Main Dashboard -->
+        <div id="dashboard-view" class="view active">
+            <section class="hero">
+                <h1>Gravity-Adjusted Efficiency</h1>
+                <p>Discover which NBA players generate the most mathematical 3pt shooting value through offensive gravity.</p>
+                <div class="search-container" style="justify-content: center; margin-top: 2rem;">
+                    <input type="text" id="playerSearchDash" placeholder="Highlight a player in charts...">
+                    <button id="searchBtnDash">Search</button>
+                    <button id="resetBtnDash">Reset</button>
+                </div>
+            </section>
             
-            <div class="card plot-card full-width">
-                <h2>Gravity Impact Dumbbell Plot (Top, Bottom, Targets & Searched)</h2>
-                <div id="dumbbellPlot" class="plot-container"></div>
+            <section class="dashboard">
+                <div class="card plot-card">
+                    <h2>GAE vs Standard 3P%</h2>
+                    <div id="gaeScatterPlot-dash" class="plot-container"></div>
+                </div>
+                <div class="card plot-card">
+                    <h2>Proximity vs Standard Efficiency (Bubble = Total 3PA Volume)</h2>
+                    <div id="proximityScatterPlot-dash" class="plot-container"></div>
+                </div>
+                
+                <div class="card plot-card full-width">
+                    <h2>Gravity Impact Dumbbell Plot (Top, Bottom & Searched)*</h2>
+                    <div id="dumbbellPlot-dash" class="plot-container"></div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem; text-align: center;">
+                        <em>* This plot displays only a few players, prioritizing those with the highest and lowest GAE scores, along with players most people consider impactful.</em>
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <!-- View 2: Theory & Methodology -->
+        <div id="theory-view" class="view hidden">
+            <section class="theory-section">
+                <div class="card full-width theory-card">
+                    <h1 class="theory-title">Theory explained</h1>
+                    
+                    <div class="theory-block">
+                        <h3>What is "Offensive Gravity"?</h3>
+                        <p>In basketball, "gravity" refers to a player's ability to draw defenders towards them, even when they don't have the ball. Elite shooters act like magnets; defenses refuse to leave them open. This creates spacing for their teammates, making the entire offense more efficient.* However, standard statistics like 3-Point Percentage (3P%) do not capture this hidden value.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            <em>* Note: While "gravity" in basketball also applies to dominant interior players (e.g., rim-runners or post-up threats drawing help defense inside), this dashboard specifically focuses on quantifying <strong>perimeter / 3-point shooting gravity</strong>.</em>
+                        </p>
+                    </div>
+                    
+                    <div class="theory-block">
+                        <h3>How We Calculate the Gravity Index</h3>
+                        <p>To quantify gravity, we use NBA tracking data that measures the <strong>Closest Defender Distance</strong> for every shot. We specifically analyze <strong>all 3-point attempts</strong> (both pull-ups and catch-and-shoot).</p>
+                        <p>If a player is constantly shooting with a defender right in their face (a low average defender distance), it means defenses are terrified to leave them open. We calculate the difference between the league average defender distance (about 6.5 feet) and a player's average defender distance, and then convert this into a <strong>Z-score</strong> to create their <strong>Gravity Index</strong>.</p>
+                        <ul>
+                            <li><strong>Gravity Index > 0:</strong> Above average gravity. Defenders stay glued to this player. A score of +1.5 means they draw significantly more defensive attention than average.</li>
+                            <li><strong>Gravity Index &lt; 0:</strong> Below average gravity. Defenders sag off and help inside. A negative score (e.g., -1.5) means they are routinely left wide open compared to the rest of the league.</li>
+                        </ul>
+                    </div>
+
+                    <div class="theory-block">
+                        <h3>Gravity-Adjusted Efficiency (GAE)</h3>
+                        <p>We believe a player who shoots 38% while heavily guarded is mathematically more valuable to an offense than a player who shoots 38% but is left wide open by the defense.</p>
+                        <p>To account for this, we multiply a player's Standard 3P% by their Gravity Index. The result is <strong>Gravity-Adjusted Efficiency (GAE)</strong>. This metric rewards players who maintain high efficiency despite defensive pressure, revealing the true floor-spacers of the NBA.</p>
+                    </div>
+
+                    <hr class="theory-divider">
+
+                    <h2 class="theory-subtitle">Understanding the Plots</h2>
+                    
+                    <div class="theory-block">
+                        <h3>1. GAE vs Standard 3P%</h3>
+                        <p>This scatter plot compares the traditional metric (X-axis) with our new metric (Y-axis). Players sitting <em>above</em> the diagonal dashed line are actually more valuable than their raw shooting percentage suggests, due to their gravity. Players <em>below</em> the line are the opposite; they might have better percentages than others, but aren't necessarily better shooters.</p>
+                    </div>
+
+                    <div class="theory-block">
+                        <h3>2. Proximity vs Standard Efficiency</h3>
+                        <p>This chart plots Defender Distance (X-axis) against Standard 3P% (Y-axis). The size of the bubble represents the player's <strong>Total 3-Point Volume</strong>. The ideal player is in the top-left quadrant: heavily guarded, yet highly efficient on high volume.</p>
+                    </div>
+
+                    <div class="theory-block">
+                        <h3>3. Gravity Impact Dumbbell Plot</h3>
+                        <p>This plot dramatically shows the "shift" for specific players. The red dot is their standard 3P%, and the green dot is their GAE. A long line pulling to the right indicates a massive boost in value due to their extreme offensive gravity.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- View 3: Player Explorer -->
+        <div id="explorer-view" class="view hidden">
+            <div class="filters-bar">
+                <div class="search-container explorer-search">
+                    <input type="text" id="playerSearchExp" placeholder="Filter by player...">
+                    <button id="searchBtnExp">Search</button>
+                    <button id="resetBtnExp">Reset</button>
+                </div>
+                <div class="filter-group">
+                    <label for="min3pa">Min 3PA: <span id="min3paValue">100</span></label>
+                    <input type="range" id="min3pa" min="50" max="500" value="100" step="10">
+                </div>
+                <div class="filter-group">
+                    <label for="teamFilter">Team:</label>
+                    <select id="teamFilter">
+                        <option value="All">All Teams</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="positionFilter">Position:</label>
+                    <select id="positionFilter">
+                        <option value="All">All Positions</option>
+                        <option value="G">Guard (G)</option>
+                        <option value="F">Forward (F)</option>
+                        <option value="C">Center (C)</option>
+                    </select>
+                </div>
             </div>
-        </section>
+
+            <section class="dashboard">
+                <div class="card plot-card">
+                    <h2>GAE vs Standard 3P%</h2>
+                    <div id="gaeScatterPlot-exp" class="plot-container"></div>
+                </div>
+                <div class="card plot-card">
+                    <h2>Proximity vs Standard Efficiency</h2>
+                    <div id="proximityScatterPlot-exp" class="plot-container"></div>
+                </div>
+            </section>
+
+            <section class="leaderboard-section">
+                <div class="card full-width">
+                    <h2>Leaderboard</h2>
+                    <div class="table-container">
+                        <table id="leaderboardTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="PLAYER_NAME">Player</th>
+                                    <th data-sort="TEAM_ABBREVIATION">Team</th>
+                                    <th data-sort="POSITION">Pos</th>
+                                    <th data-sort="FG3A">Total 3PA</th>
+                                    <th data-sort="FG3_PCT">Standard 3P%</th>
+                                    <th data-sort="GAE" class="sort-active highlight-col">GAE %</th>
+                                    <th data-sort="Gravity_Index">Gravity Index</th>
+                                    <th data-sort="AVG_DEF_DIST">Avg Def Dist (ft)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboardBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
     </main>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>

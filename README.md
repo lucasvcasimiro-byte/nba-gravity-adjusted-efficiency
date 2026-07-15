@@ -19,13 +19,12 @@ The easiest way to view the interactive Plotly graphs is to start a local Python
    cd app
    ```
 
-3. Start the local Python server. (Note: use your direct path to Python if `python` doesn't work out of the box on Windows):
+3. Start the local Python server:
 
    ```bash
-   C:\Users\lucas\AppData\Local\Python\pythoncore-3.14-64\python.exe -m http.server 8000
+   python -m http.server 8000
    ```
-
-   *(Or simply `python -m http.server 8000` if Python is added to your PATH).*
+   *(Note: If you are on Windows and get a "Python was not found" error, use `py` instead: `py -m http.server 8000`. On Mac/Linux, you may need to use `python3 -m http.server 8000`)*
 4. Open your web browser and go to:
    **[http://localhost:8000](http://localhost:8000)**
 
@@ -42,7 +41,8 @@ If you want to pull the latest stats from the NBA API and regenerate `gae_data.j
 2. Run the generator script:
 
    ```bash
-   C:\Users\lucas\AppData\Local\Python\pythoncore-3.14-64\python.exe calculate_gae.py
+   python calculate_gae.py
    ```
+   *(Note: If you get a "Python was not found" error, try using `py calculate_gae.py` on Windows, or `python3 calculate_gae.py` on Mac/Linux).*
 
 3. Move the newly generated `gae_data.json` into the `app/` folder so the website can read it.
