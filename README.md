@@ -15,7 +15,7 @@ Where $w_{\text{prox}}$ controls defender proximity gravity ($0-25\%$), and $w_{
 ## Project Structure
 
 - `code/`: Contains the `calculate_gae.py` script that pulls data from the `nba_api`, engineers the Gravity Index, and exports the data.
-- `app/`: Contains the front-end interactive web application (HTML, CSS, JS) using Plotly.js to visualize the metrics.
+- `app/`: Contains the front-end interactive web application (HTML, CSS, JS) using Plotly to visualize the metrics.
 - `plots/`: Contains static images generated from previous scripts.
 
 ## How to Run the Interactive Web App Locally
