@@ -3,53 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gravity-Adjusted Efficiency (GAE)</title>
+    <title>Ultimate Shooters · Gravity-Adjusted Efficiency</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="stylesheet" href="styles.css?v=6">
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 </head>
 <body>
+    <!-- Starting / Welcome Screen -->
+    <div id="welcomeScreen" class="welcome-screen">
+        <div class="welcome-bg-glow"></div>
+
+        <!-- Scrolling team logo strips (decorative / educational) -->
+        <div class="teams-marquee-wrap" id="marqueeWrap1">
+            <div class="teams-marquee" id="marqueeRow1"></div>
+        </div>
+        <div class="teams-marquee-wrap teams-marquee-reverse" id="marqueeWrap2">
+            <div class="teams-marquee" id="marqueeRow2"></div>
+        </div>
+        <div class="welcome-container">
+            <div class="welcome-badge">NBA ADVANCED ANALYTICS</div>
+            <h1 class="welcome-title">ULTIMATE <span>SHOOTERS</span></h1>
+            <p class="welcome-subtitle">
+                Beyond Standard 3P% — Quantifying the NBA's True Floor-Spacers Through <strong>Gravity-Adjusted Efficiency (GAE)</strong>.
+            </p>
+            <div class="welcome-actions">
+                <button id="enterAppBtn" class="enter-app-btn">
+                    <span>Enter Ultimate Shooters</span>
+                    <span class="btn-arrow">&rarr;</span>
+                </button>
+            </div>
+
+            <div class="welcome-footer-tag">
+                <span>Free & Open-Source Analytics Platform · No login required</span>
+            </div>
+        </div>
+    </div>
+
     <header class="navbar">
-        <div class="logo">NBA <span>GAE Metrics</span></div>
+        <div class="logo" id="navLogo" title="Click to view start screen">Ultimate <span>Shooters</span></div>
         <nav class="nav-links">
             <a href="#" data-target="dashboard-view" class="nav-tab active">Main Dashboard</a>
-            <a href="#" data-target="theory-view" class="nav-tab">Theory & Methodology</a>
+            <a href="#" data-target="versus-view" class="nav-tab">Versus Mode </a>
             <a href="#" data-target="explorer-view" class="nav-tab">Player Explorer</a>
+            <a href="#" data-target="theory-view" class="nav-tab">Theory</a>
         </nav>
+        <div class="season-selector-wrap">
+            <label for="seasonSelect">Season:</label>
+            <select id="seasonSelect" class="season-dropdown">
+                <option value="2025-26" selected>2025-26 (Latest)</option>
+                <option value="2024-25">2024-25 (Full Season)</option>
+            </select>
+        </div>
     </header>
 
     <!-- Player Profile Modal -->
     <div id="playerModal" class="modal-overlay hidden">
         <div class="modal-content">
             <button id="closeModalBtn" class="close-btn">&times;</button>
-            <div class="modal-header">
-                <h2 id="modalPlayerName">Player Name</h2>
-                <span id="modalTeamPos" class="team-pos-badge">TEAM | POS</span>
+            <div class="modal-header-profile">
+                <div class="modal-avatar-frame">
+                    <img id="modalPlayerImg" src="" alt="Player Headshot" class="modal-player-img" />
+                    <img id="modalTeamLogo" src="" alt="Team Logo" class="modal-team-watermark" />
+                </div>
+                <div class="modal-title-meta">
+                    <h2 id="modalPlayerName">Player Name</h2>
+                    <div class="modal-tags">
+                        <span id="modalTeamPos" class="team-pos-badge">TEAM | POS</span>
+                        <span id="modalGravityBadge" class="gravity-badge">+0.00 Gravity</span>
+                    </div>
+                </div>
             </div>
+
             <div class="modal-stats-grid">
                 <div class="stat-box highlight">
-                    <h3>GAE</h3>
+                    <h3>GAE (Dynamic)</h3>
                     <p id="modalGAE">0.0%</p>
+                    <span id="modalGaeDiffBadge" class="modal-sub-delta">+0.0% vs raw</span>
                 </div>
                 <div class="stat-box">
                     <h3>Standard 3P%</h3>
                     <p id="modal3P">0.0%</p>
+                    <span class="modal-sub-info">Unadjusted</span>
                 </div>
                 <div class="stat-box">
                     <h3>Gravity Index</h3>
-                    <p id="modalGravity">0.0</p>
+                    <p id="modalGravity">0.00</p>
+                    <span class="modal-sub-info">Z-Score</span>
                 </div>
                 <div class="stat-box">
                     <h3>Total 3PA</h3>
                     <p id="modal3PA">0</p>
+                    <span class="modal-sub-info">Volume</span>
                 </div>
                 <div class="stat-box">
                     <h3>C&S 3PA</h3>
                     <p id="modalCS3PA">0</p>
+                    <span class="modal-sub-info">Catch & Shoot</span>
                 </div>
                 <div class="stat-box">
                     <h3>Avg Def Dist</h3>
-                    <p id="modalDefDist">0 ft</p>
+                    <p id="modalDefDist">0.0 ft</p>
+                    <span class="modal-sub-info">Proximity</span>
+                </div>
+            </div>
+
+            <!-- Proximity Visual Meter -->
+            <div class="modal-meter-section">
+                <div class="meter-labels">
+                    <span>Heavily Contested (Tight)</span>
+                    <span id="modalDefDistSummary">Distance: 0.0 ft</span>
+                    <span>Wide Open (Sagging)</span>
+                </div>
+                <div class="meter-track">
+                    <div id="modalMeterPin" class="meter-pin" style="left: 50%;"></div>
+                    <div class="meter-league-line" title="League Average (~6.47 ft)"></div>
+                </div>
+                <div class="meter-legend">
+                    <span class="legend-note">
+                        <strong>Why ~5 ft is elite:</strong> While 5 ft sounds like space on an isolated play, this is an <em>aggregate season average</em>. Wide-open transition and kick-out shots (8–15+ ft) skew every player's mean upward (League Avg is ~6.5 ft). Therefore, an overall average near 5 ft mathematically proves that the vast majority of shots were taken under tight, in-your-face contests (2–4 ft).
+                    </span>
                 </div>
             </div>
         </div>
@@ -67,6 +139,102 @@
                     <button id="resetBtnDash">Reset</button>
                 </div>
             </section>
+
+            <!-- Interactive Metric Lab -->
+            <section class="metric-lab-section">
+                <div class="card full-width metric-lab-card">
+                    <div class="metric-lab-header">
+                        <div class="lab-title-wrap">
+                            <span class="lab-pill">INTERACTIVE METRIC LAB</span>
+                            <h2>Dual-Factor Gravity & Team Impact Tuning</h2>
+                            <p>Fine-tune both <strong>Defender Proximity Gravity</strong> and <strong>Team Winning Impact</strong>. Control how much defensive magnets and offensive floor-raisers shift efficiency.</p>
+                        </div>
+                        <div class="live-formula-badge">
+                            <span class="formula-label">ACTIVE DUAL FORMULA</span>
+                            <code id="formulaCode">GAE = 3P% &times; [1 + (Gravity &times; 0.05) + (Team Impact &times; 0.015)]</code>
+                        </div>
+                    </div>
+
+                    <div class="metric-lab-controls dual-controls">
+                        <!-- Factor 1: Proximity Gravity -->
+                        <div class="slider-control-group">
+                            <div class="slider-meta">
+                                <span class="slider-label">1. Defender Gravity Weight (w<sub>prox</sub>)</span>
+                                <span id="gravityWeightBadge" class="weight-badge">5%</span>
+                            </div>
+                            <input type="range" id="gravitySliderDash" min="0" max="25" value="5" step="1" class="gravity-slider">
+                            <div class="slider-ticks">
+                                <span>0% (Raw)</span>
+                                <span>5% (Baseline)</span>
+                                <span>10% (High)</span>
+                                <span>15% (Aggressive)</span>
+                                <span>25% (Max)</span>
+                            </div>
+                        </div>
+
+                        <!-- Factor 2: Team Impact -->
+                        <div class="slider-control-group">
+                            <div class="slider-meta">
+                                <span class="slider-label">2. Team Winning Impact (w<sub>team</sub>)</span>
+                                <span id="teamWeightBadge" class="weight-badge team-badge">1.5%</span>
+                            </div>
+                            <input type="range" id="teamSliderDash" min="0" max="50" value="15" step="5" class="gravity-slider team-slider">
+                            <div class="slider-ticks">
+                                <span>0.0% (Off)</span>
+                                <span>1.5% (Default)</span>
+                                <span>3.0% (Moderate)</span>
+                                <span>5.0% (Cap)</span>
+                            </div>
+                        </div>
+
+                        <!-- Presets across both -->
+                        <div class="preset-buttons full-span-presets">
+                            <span class="preset-label">Quick Presets:</span>
+                            <button type="button" class="preset-btn" data-prox="0" data-team="0">0% (Pure 3P%)</button>
+                            <button type="button" class="preset-btn active" data-prox="5" data-team="15">Balanced Baseline (5% / 1.5%)</button>
+                            <button type="button" class="preset-btn" data-prox="10" data-team="0">Pure Gravity (10% / 0%)</button>
+                            <button type="button" class="preset-btn" data-prox="10" data-team="30">Heavy Gravity + Impact (10% / 3.0%)</button>
+                        </div>
+                    </div>
+
+                    <!-- Live Impact Highlights -->
+                    <div class="metric-impact-banner">
+                        <div class="impact-card top-riser" id="topRiserCard">
+                            <div class="impact-avatar-wrap">
+                                <img id="topRiserImg" src="" alt="Top Beneficiary" class="impact-img" />
+                                <img id="topRiserTeamLogo" src="" alt="Team Logo" class="impact-team-logo" />
+                            </div>
+                            <div class="impact-info">
+                                <span class="impact-label">&uarr; TOP GRAVITY BENEFICIARY</span>
+                                <strong id="topRiserName">Player Name</strong>
+                                <div class="impact-stats">
+                                    <span id="topRiser3P">3P%: 0.0%</span>
+                                    <span class="arrow">&rarr;</span>
+                                    <span id="topRiserGAE" class="highlight-stat">GAE: 0.0%</span>
+                                    <span id="topRiserDiff" class="delta-badge delta-pos">+0.0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="impact-card biggest-drop" id="biggestDropCard">
+                            <div class="impact-avatar-wrap">
+                                <img id="biggestDropImg" src="" alt="Most Open" class="impact-img" />
+                                <img id="biggestDropTeamLogo" src="" alt="Team Logo" class="impact-team-logo" />
+                            </div>
+                            <div class="impact-info">
+                                <span class="impact-label">&darr; MOST OPEN / PENALIZED</span>
+                                <strong id="biggestDropName">Player Name</strong>
+                                <div class="impact-stats">
+                                    <span id="biggestDrop3P">3P%: 0.0%</span>
+                                    <span class="arrow">&rarr;</span>
+                                    <span id="biggestDropGAE" class="highlight-stat">GAE: 0.0%</span>
+                                    <span id="biggestDropDiff" class="delta-badge delta-neg">-0.0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
             
             <section class="dashboard">
                 <div class="card plot-card">
@@ -79,7 +247,7 @@
                 </div>
                 
                 <div class="card plot-card full-width">
-                    <h2>Gravity Impact Dumbbell Plot (Top, Bottom & Searched)*</h2>
+                    <h2>Gravity Impact Dumbbell Plot*</h2>
                     <div id="dumbbellPlot-dash" class="plot-container"></div>
                     <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem; text-align: center;">
                         <em>* This plot displays only a few players, prioritizing those with the highest and lowest GAE scores, along with players most people consider impactful.</em>
@@ -88,53 +256,300 @@
             </section>
         </div>
 
-        <!-- View 2: Theory & Methodology -->
+        <!-- View: Versus Mode -->
+        <div id="versus-view" class="view hidden">
+            <section class="versus-hero">
+                <div class="versus-header-content">
+                    <span class="lab-pill">HEAD-TO-HEAD SHOWDOWN</span>
+                    <h1>Versus Mode: Direct Player Comparison</h1>
+                    <p>Compare two players side-by-side across their offensive gravity, shooting efficiency, proximity distribution, on-court team impact, and court shooting zone heatmaps.</p>
+                </div>
+
+                <div class="versus-selection-bar">
+                    <div class="player-select-box">
+                        <label for="versusPlayerA">Player 1:</label>
+                        <select id="versusPlayerA" class="versus-dropdown"></select>
+                    </div>
+
+                    <div class="versus-badge-icon">VS</div>
+
+                    <div class="player-select-box">
+                        <label for="versusPlayerB">Player 2:</label>
+                        <select id="versusPlayerB" class="versus-dropdown"></select>
+                    </div>
+                </div>
+
+                <div class="quick-matchups">
+                    <span class="quick-label">Featured Matchups:</span>
+                    <button type="button" class="matchup-btn" data-a="Stephen Curry" data-b="Luka Dončić">Steph vs Luka</button>
+                    <button type="button" class="matchup-btn" data-a="Kevin Durant" data-b="Jayson Tatum">KD vs Tatum</button>
+                    <button type="button" class="matchup-btn" data-a="Duncan Robinson" data-b="AJ Green">Duncan vs AJ Green</button>
+                    <button type="button" class="matchup-btn" data-a="Donovan Mitchell" data-b="Anthony Edwards">Spida vs Ant</button>
+                    <button type="button" class="matchup-btn" data-a="Shai Gilgeous-Alexander" data-b="Jamal Murray">SGA vs Jamal</button>
+                </div>
+            </section>
+
+            <!-- Tale of the Tape Cards -->
+            <section class="versus-cards-container">
+                <div class="versus-card card player-a-card" id="cardPlayerA">
+                    <div class="versus-card-header">
+                        <div class="versus-avatar-frame">
+                            <img id="versusImgA" src="" alt="Player A" class="versus-player-img">
+                            <img id="versusTeamLogoA" src="" alt="Team Logo" class="versus-team-logo">
+                        </div>
+                        <div class="versus-player-meta">
+                            <h2 id="versusNameA">Player A</h2>
+                            <div class="versus-meta-tags">
+                                <span id="versusTeamPosA" class="team-pos-badge">TEAM | POS</span>
+                                <span id="versusGravityBadgeA" class="gravity-badge">+0.00 Gravity</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="versus-hero-stat">
+                        <div class="stat-highlight">
+                            <span class="stat-label">GAE (Dynamic)</span>
+                            <span id="versusGaeA" class="stat-val highlight-color">0.0%</span>
+                            <span id="versusGaeShiftA" class="stat-sub-delta">+0.0% shift</span>
+                        </div>
+                        <div class="stat-highlight">
+                            <span class="stat-label">Raw 3P%</span>
+                            <span id="versus3pA" class="stat-val">0.0%</span>
+                            <span class="stat-sub-info">Standard</span>
+                        </div>
+                        <div class="stat-highlight">
+                            <span class="stat-label">Net Rating</span>
+                            <span id="versusNetA" class="stat-val">+0.0</span>
+                            <span class="stat-sub-info">Team Impact</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="versus-card card player-b-card" id="cardPlayerB">
+                    <div class="versus-card-header">
+                        <div class="versus-avatar-frame">
+                            <img id="versusImgB" src="" alt="Player B" class="versus-player-img">
+                            <img id="versusTeamLogoB" src="" alt="Team Logo" class="versus-team-logo">
+                        </div>
+                        <div class="versus-player-meta">
+                            <h2 id="versusNameB">Player B</h2>
+                            <div class="versus-meta-tags">
+                                <span id="versusTeamPosB" class="team-pos-badge">TEAM | POS</span>
+                                <span id="versusGravityBadgeB" class="gravity-badge">+0.00 Gravity</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="versus-hero-stat">
+                        <div class="stat-highlight">
+                            <span class="stat-label">GAE (Dynamic)</span>
+                            <span id="versusGaeB" class="stat-val highlight-color">0.0%</span>
+                            <span id="versusGaeShiftB" class="stat-sub-delta">+0.0% shift</span>
+                        </div>
+                        <div class="stat-highlight">
+                            <span class="stat-label">Raw 3P%</span>
+                            <span id="versus3pB" class="stat-val">0.0%</span>
+                            <span class="stat-sub-info">Standard</span>
+                        </div>
+                        <div class="stat-highlight">
+                            <span class="stat-label">Net Rating</span>
+                            <span id="versusNetB" class="stat-val">+0.0</span>
+                            <span class="stat-sub-info">Team Impact</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visual Comparison Charts -->
+            <section class="versus-charts-grid">
+                <!-- Chart 1: Radar Comparison -->
+                <div class="card plot-card">
+                    <h2>Overall Profile Comparison (Radar Chart)</h2>
+                    <div id="versusRadarPlot" class="plot-container"></div>
+                </div>
+
+                <!-- Chart 2: Defender Proximity Breakdown -->
+                <div class="card plot-card">
+                    <h2>Defender Proximity Breakdown (% of Shots Guarded)</h2>
+                    <div id="versusProximityPlot" class="plot-container"></div>
+                </div>
+
+                <!-- Chart 3: Court Shot Location Breakdown -->
+                <div class="card plot-card full-width">
+                    <h2>Court Shot Location Breakdown (Accuracy & Volume by Zone)</h2>
+                    <div id="versusZonePlot" class="plot-container"></div>
+                </div>
+            </section>
+
+            <!-- Head to Head Statistical Table -->
+            <section class="versus-table-section">
+                <div class="card full-width">
+                    <h2>Tale of the Tape (Direct Metrics Comparison)</h2>
+                    <div class="table-container">
+                        <table id="versusTable" class="versus-stats-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 35%; text-align: left;" id="thPlayerA">Player 1</th>
+                                    <th style="width: 30%; text-align: center;">Metric</th>
+                                    <th style="width: 35%; text-align: right;" id="thPlayerB">Player 2</th>
+                                </tr>
+                            </thead>
+                            <tbody id="versusTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+                <!-- View 2: Theory -->
         <div id="theory-view" class="view hidden">
             <section class="theory-section">
                 <div class="card full-width theory-card">
-                    <h1 class="theory-title">Theory explained</h1>
-                    
-                    <div class="theory-block">
-                        <h3>What is "Offensive Gravity"?</h3>
-                        <p>In basketball, "gravity" refers to a player's ability to draw defenders towards them, even when they don't have the ball. Elite shooters act like magnets; defenses refuse to leave them open. This creates spacing for their teammates, making the entire offense more efficient.* However, standard statistics like 3-Point Percentage (3P%) do not capture this hidden value.</p>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
-                            <em>* Note: While "gravity" in basketball also applies to dominant interior players (e.g., rim-runners or post-up threats drawing help defense inside), this dashboard specifically focuses on quantifying <strong>perimeter / 3-point shooting gravity</strong>.</em>
-                        </p>
-                    </div>
-                    
-                    <div class="theory-block">
-                        <h3>How We Calculate the Gravity Index</h3>
-                        <p>To quantify gravity, we use NBA tracking data that measures the <strong>Closest Defender Distance</strong> for every shot. We specifically analyze <strong>all 3-point attempts</strong> (both pull-ups and catch-and-shoot).</p>
-                        <p>If a player is constantly shooting with a defender right in their face (a low average defender distance), it means defenses are terrified to leave them open. We calculate the difference between the league average defender distance (about 6.5 feet) and a player's average defender distance, and then convert this into a <strong>Z-score</strong> to create their <strong>Gravity Index</strong>.</p>
-                        <ul>
-                            <li><strong>Gravity Index > 0:</strong> Above average gravity. Defenders stay glued to this player. A score of +1.5 means they draw significantly more defensive attention than average.</li>
-                            <li><strong>Gravity Index &lt; 0:</strong> Below average gravity. Defenders sag off and help inside. A negative score (e.g., -1.5) means they are routinely left wide open compared to the rest of the league.</li>
-                        </ul>
-                    </div>
+                    <h1 class="theory-title">Theory</h1>
 
+                    <!-- ── Part I: What is Gravity ──────────────────────── -->
                     <div class="theory-block">
-                        <h3>Gravity-Adjusted Efficiency (GAE)</h3>
-                        <p>We believe a player who shoots 38% while heavily guarded is mathematically more valuable to an offense than a player who shoots 38% but is left wide open by the defense.</p>
-                        <p>To account for this, we multiply a player's Standard 3P% by their Gravity Index. The result is <strong>Gravity-Adjusted Efficiency (GAE)</strong>. This metric rewards players who maintain high efficiency despite defensive pressure, revealing the true floor-spacers of the NBA.</p>
+                        <h3>What is Offensive Gravity?</h3>
+                        <p>In basketball, <strong>gravity</strong> is the invisible force that distorts a defense. Elite shooters compel defenders to follow them everywhere on the floor — whether they have the ball or not. Their mere presence stretches the defense, opens driving lanes, creates kick-out opportunities, and shifts the entire geometry of an offense.</p>
+                        <p>Standard metrics like 3-Point Percentage (3P%) are blind to this. A player who shoots 38% while a defender is in their face every possession is not equal to one who shoots 38% standing wide open. The Gravity Index and GAE exist to surface that difference.</p>
+                        <p class="theory-note">Note: This dashboard focuses specifically on <strong>perimeter shooting gravity</strong>. Interior gravity (post-up threats, rim-runners drawing help) is a related but separate phenomenon.</p>
                     </div>
 
                     <hr class="theory-divider">
 
+                    <!-- ── Part II: The Four Pillars of Gravity ─────────── -->
+                    <h2 class="theory-subtitle">The Four Pillars of the Gravity Index</h2>
+                    <p class="theory-lead">Gravity is not a single number. It is a composite of four independent behavioral signals — each capturing a different dimension of how much a defense must re-organize itself around a player.</p>
+
+                    <div class="theory-pillars-grid">
+
+                        <div class="theory-pillar-card">
+                            <div class="theory-pillar-header">
+                                <span class="theory-pillar-icon">📐</span>
+                                <div>
+                                    <h4 class="theory-pillar-title">1. Proximity Pressure</h4>
+                                    <span class="theory-pillar-weight">60% of Gravity Index</span>
+                                </div>
+                            </div>
+                            <p><strong>Data:</strong> Average closest defender distance (ft) on all 3-point attempts, from NBA optical tracking.</p>
+                            <p>The most direct signal: how physically close does a defender get? Lower distance = tighter coverage = more gravity. We <em>invert</em> the z-score so that a player who draws defenders unusually close scores positively.</p>
+                            <p class="theory-nuance">⚠️ <strong>The 5-foot nuance:</strong> A season average of ~5.1 ft sounds modest, but the league-wide mean sits near 6.4 ft because every player accumulates wide-open transition looks that pull their average up. Maintaining a 5.1 ft aggregate requires a defender in the 2–4 ft ("Tight") bucket on 30–40% of attempts — that is elite-tier coverage.</p>
+                        </div>
+
+                        <div class="theory-pillar-card">
+                            <div class="theory-pillar-header">
+                                <span class="theory-pillar-icon">🛡️</span>
+                                <div>
+                                    <h4 class="theory-pillar-title">2. Contest Rate</h4>
+                                    <span class="theory-pillar-weight">20% of Gravity Index</span>
+                                </div>
+                            </div>
+                            <p><strong>Data:</strong> Percentage of 3-point attempts where the closest defender was Very Tight (&lt;2 ft) or Tight (2–4 ft).</p>
+                            <p>Proximity captures the <em>average</em>; contest rate captures the <em>frequency</em> of extreme defensive commitment. A player who draws tight contest on 45% of attempts is telling the defense something very different than a player at 20%, even if their averages are similar.</p>
+                            <p>This component penalizes players whose low average distance is driven by a few exceptional looks, rewarding consistent defensive pressure across the entire shooting diet.</p>
+                        </div>
+
+                        <div class="theory-pillar-card">
+                            <div class="theory-pillar-header">
+                                <span class="theory-pillar-icon">📊</span>
+                                <div>
+                                    <h4 class="theory-pillar-title">3. Volume Gravity</h4>
+                                    <span class="theory-pillar-weight">12% of Gravity Index</span>
+                                </div>
+                            </div>
+                            <p><strong>Data:</strong> Total 3-point attempts (FG3A) across the season.</p>
+                            <p>Defenses don't just react to efficiency — they scheme around <em>volume</em>. A player who attempts 600 threes forces a team to build its entire defensive game plan around containing them. A player who takes 80 threes with similar efficiency is a nuisance, not a gravitational threat.</p>
+                            <p>Volume gravity is weighted modestly (12%) because it amplifies real gravity rather than substituting for it: a high-volume, tightly guarded shooter is a different kind of weapon than a spot-up player who happens to take a lot of open looks.</p>
+                        </div>
+
+                        <div class="theory-pillar-card">
+                            <div class="theory-pillar-header">
+                                <span class="theory-pillar-icon">💨</span>
+                                <div>
+                                    <h4 class="theory-pillar-title">4. Pull-Up Rate</h4>
+                                    <span class="theory-pillar-weight">8% of Gravity Index</span>
+                                </div>
+                            </div>
+                            <p><strong>Data:</strong> Pull-up 3-point attempts as a share of total 3-point attempts.</p>
+                            <p>A catch-and-shoot specialist draws gravity only when stationary. A shooter who creates off the dribble — step-backs, side-steps, pull-ups from range — must be respected <em>everywhere on the floor at all times</em>. That universality forces defenders to close out sooner and harder, and prohibits the defense from sagging to help on drives.</p>
+                            <p>Pull-up rate is weighted smallest (8%) to avoid over-crediting volume pull-up shooters who may sacrifice efficiency, but it distinctly separates the all-court threats from pure spot-up shooters.</p>
+                        </div>
+
+                    </div>
+
+                    <hr class="theory-divider">
+
+                    <!-- ── Part III: The Formula ─────────────────────────── -->
+                    <h2 class="theory-subtitle">The Gravity Index Formula</h2>
+
+                    <div class="theory-formula-block">
+                        <div class="theory-formula-display">
+                            <div class="theory-formula-line">
+                                <span class="tf-label">Gravity Index (G)</span>
+                                <span class="tf-eq">=</span>
+                                <span class="tf-term prox">0.60 · z<sub>prox</sub></span>
+                                <span class="tf-plus">+</span>
+                                <span class="tf-term contest">0.20 · z<sub>contest</sub></span>
+                                <span class="tf-plus">+</span>
+                                <span class="tf-term volume">0.12 · z<sub>vol</sub></span>
+                                <span class="tf-plus">+</span>
+                                <span class="tf-term pullup">0.08 · z<sub>pull</sub></span>
+                            </div>
+                        </div>
+                        <div class="theory-formula-legend">
+                            <div class="tf-legend-item"><span class="tf-dot prox"></span><strong>z<sub>prox</sub></strong> — Inverted proximity z-score (lower defender distance → higher score)</div>
+                            <div class="tf-legend-item"><span class="tf-dot contest"></span><strong>z<sub>contest</sub></strong> — Contest rate z-score (share of Tight + Very Tight attempts)</div>
+                            <div class="tf-legend-item"><span class="tf-dot volume"></span><strong>z<sub>vol</sub></strong> — 3PA volume z-score (total 3-point attempts this season)</div>
+                            <div class="tf-legend-item"><span class="tf-dot pullup"></span><strong>z<sub>pull</sub></strong> — Pull-up share z-score (pull-up 3PA ÷ total 3PA)</div>
+                        </div>
+                        <p class="theory-note">All z-scores are computed fresh within each season's player pool. G = 0 is the league average shooter. G > 0 means the defense commits more resources than average; G &lt; 0 means the player is left relatively open.</p>
+                    </div>
+
+                    <hr class="theory-divider">
+
+                    <!-- ── Part IV: GAE ──────────────────────────────────── -->
+                    <h2 class="theory-subtitle">Gravity-Adjusted Efficiency (GAE)</h2>
+
+                    <div class="theory-block">
+                        <p>A player who shoots 38% while a defender is 3 feet away on every shot is objectively harder to replicate than one who shoots 38% in complete freedom. GAE captures that reality:</p>
+
+                        <div class="theory-formula-block compact">
+                            <div class="theory-formula-display">
+                                <div class="theory-formula-line">
+                                    <span class="tf-label">GAE</span>
+                                    <span class="tf-eq">=</span>
+                                    <span class="tf-term prox">3P%</span>
+                                    <span class="tf-eq">×</span>
+                                    <span class="tf-term contest">[ 1 + w<sub>G</sub> · G + w<sub>T</sub> · z<sub>team</sub> ]</span>
+                                </div>
+                            </div>
+                            <div class="theory-formula-legend">
+                                <div class="tf-legend-item"><span class="tf-dot prox"></span><strong>w<sub>G</sub></strong> — Gravity weight (user-controlled, 0–25%)</div>
+                                <div class="tf-legend-item"><span class="tf-dot contest"></span><strong>G</strong> — Composite Gravity Index (four-pillar score above)</div>
+                                <div class="tf-legend-item"><span class="tf-dot volume"></span><strong>w<sub>T</sub></strong> — Team Impact weight (user-controlled, 0–5%)</div>
+                                <div class="tf-legend-item"><span class="tf-dot pullup"></span><strong>z<sub>team</sub></strong> — On-court Net Rating z-score (team quality context)</div>
+                            </div>
+                        </div>
+
+                        <p>The user-adjustable weights preserve the metric's raw 3P% as a baseline (weights at 0 → GAE = 3P%) and let analysts explore how much value they believe defensive gravity and team quality should contribute. The default settings (G: 5%, Team: 1.5%) produce modest, conservative adjustments.</p>
+                    </div>
+
+                    <hr class="theory-divider">
+
+                    <!-- ── Part V: Understanding the Plots ─────────────── -->
                     <h2 class="theory-subtitle">Understanding the Plots</h2>
-                    
+
                     <div class="theory-block">
                         <h3>1. GAE vs Standard 3P%</h3>
-                        <p>This scatter plot compares the traditional metric (X-axis) with our new metric (Y-axis). Players sitting <em>above</em> the diagonal dashed line are actually more valuable than their raw shooting percentage suggests, due to their gravity. Players <em>below</em> the line are the opposite; they might have better percentages than others, but aren't necessarily better shooters.</p>
+                        <p>Players <em>above</em> the diagonal are more valuable than their raw percentage suggests — gravity is giving them a boost. Players <em>below</em> may be shooting in comfortable conditions that raw percentages don't discount for.</p>
                     </div>
-
                     <div class="theory-block">
                         <h3>2. Proximity vs Standard Efficiency</h3>
-                        <p>This chart plots Defender Distance (X-axis) against Standard 3P% (Y-axis). The size of the bubble represents the player's <strong>Total 3-Point Volume</strong>. The ideal player is in the top-left quadrant: heavily guarded, yet highly efficient on high volume.</p>
+                        <p>Defender Distance on X-axis, 3P% on Y-axis, bubble size = 3PA volume. The elite quadrant is top-left: heavily guarded, highly efficient, high volume.</p>
                     </div>
-
                     <div class="theory-block">
                         <h3>3. Gravity Impact Dumbbell Plot</h3>
-                        <p>This plot dramatically shows the "shift" for specific players. The red dot is their standard 3P%, and the green dot is their GAE. A long line pulling to the right indicates a massive boost in value due to their extreme offensive gravity.</p>
+                        <p>Red dot = standard 3P%, green dot = GAE. A long rightward line means gravity is adding significant hidden value. A leftward pull means a player benefits from openness that the raw number doesn't penalize.</p>
                     </div>
                 </div>
             </section>
@@ -147,6 +562,10 @@
                     <input type="text" id="playerSearchExp" placeholder="Filter by player...">
                     <button id="searchBtnExp">Search</button>
                     <button id="resetBtnExp">Reset</button>
+                </div>
+                <div class="filter-group highlight-filter">
+                    <label for="gravitySliderExp">Gravity: <span id="gravityWeightExpValue">5%</span></label>
+                    <input type="range" id="gravitySliderExp" min="0" max="25" value="5" step="1">
                 </div>
                 <div class="filter-group">
                     <label for="min3pa">Min 3PA: <span id="min3paValue">100</span></label>
@@ -182,7 +601,10 @@
 
             <section class="leaderboard-section">
                 <div class="card full-width">
-                    <h2>Leaderboard</h2>
+                    <div class="leaderboard-card-header">
+                        <h2>Leaderboard</h2>
+                        <span class="table-tip">💡 Click any row to view full player profile card with headshot & proximity meter</span>
+                    </div>
                     <div class="table-container">
                         <table id="leaderboardTable">
                             <thead>
@@ -193,6 +615,7 @@
                                     <th data-sort="FG3A">Total 3PA</th>
                                     <th data-sort="FG3_PCT">Standard 3P%</th>
                                     <th data-sort="GAE" class="sort-active highlight-col">GAE %</th>
+                                    <th data-sort="GAE_DIFF" title="Net change from Standard 3P% to GAE">GAE Shift &Delta;</th>
                                     <th data-sort="Gravity_Index">Gravity Index</th>
                                     <th data-sort="AVG_DEF_DIST">Avg Def Dist (ft)</th>
                                 </tr>
@@ -207,6 +630,6 @@
         </div>
     </main>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>
